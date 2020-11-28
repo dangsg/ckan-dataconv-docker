@@ -5,16 +5,21 @@ volumes:
   ckan_data:
   pg_data:
   solr_data:
+  mysql_data:
+  mongo_data:
 
 services:
   ckan:
     container_name: ckan
-    image: keitaro/ckan:${CKAN_VERSION}
+    # image: keitaro/ckan:${CKAN_VERSION}
+    image: dangsg/ckan:2.9
     networks:
       - frontend
       - backend
     depends_on:
       - db
+      - mysql
+      - mongo
     ports:
       - "0.0.0.0:${CKAN_PORT}:5000"
     env_file:
@@ -31,6 +36,8 @@ services:
       - DS_RO_PASS=${DATASTORE_READONLY_PASSWORD}
     volumes:
       - ckan_data:/srv/app/data
+    links:
+      - "mysql:mysql"
 
   datapusher:
     container_name: datapusher
@@ -83,6 +90,30 @@ services:
   redis:
     container_name: redis
     image: redis:${REDIS_VERSION}
+    networks:
+      - backend
+
+  mysql:
+    container_name: mysql
+    image: mysql:8.0.22
+    command: --default-authentication-plugin=mysql_native_password
+    environment:
+      - MYSQL_ROOT_PASSWORD=Db12345678
+      - MYSQL_USER=dangsg
+      - MYSQL_PASSWORD=Db12345678
+    volumes:
+      - mysql_data:/var/lib/mysql
+    networks:
+      - backend
+
+  mongo:
+    container_name: mongo
+    image: mongo:4.4
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=dangsg
+      - MONGO_INITDB_ROOT_PASSWORD=Db@12345678
+    volumes:
+      - mongo_data:/data/db
     networks:
       - backend
 

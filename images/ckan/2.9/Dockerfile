@@ -33,7 +33,7 @@ RUN apk add --no-cache \
         python3-dev \
         libffi-dev \
         libxml2-dev \
-        libxslt-dev
+        libxslt-dev 
 
 # Link python to python3
 RUN ln -s /usr/bin/python3 /usr/bin/python
@@ -107,7 +107,7 @@ ENV SRC_DIR=/srv/app/src
 ENV DATA_DIR=/srv/app/data
 ENV PIP_SRC=${SRC_DIR}
 ENV CKAN_SITE_URL=http://localhost:5000
-ENV CKAN__PLUGINS envvars image_view text_view recline_view datastore datapusher
+ENV CKAN__PLUGINS envvars image_view text_view recline_view datastore datapusher mysql2mongodb
 
 WORKDIR ${APP_DIR}
 
@@ -145,6 +145,9 @@ RUN pip install --no-index --find-links=/srv/app/wheels uwsgi gevent
 RUN addgroup -g 92 -S ckan && \
     adduser -u 92 -h /srv/app -H -D -S -G ckan ckan
 
+ARG CACHEBUST=1
+RUN pip install -e git+https://github.com/dangsg/ckanext-mysql2mongodb#egg=ckanext-mysql2mongodb
+
 # Install CKAN
 RUN pip install -e /srv/app/src/ckan && \
     cd ${SRC_DIR}/ckan && \
@@ -168,6 +171,7 @@ RUN pip install -e /srv/app/src/ckan && \
     # Change ownership to app user
     chown -R ckan:ckan /srv/app
 
+
 # Remove wheels
 RUN rm -rf /srv/app/wheels /srv/app/ext_wheels
 
@@ -179,6 +183,15 @@ ONBUILD RUN mkdir docker-entrypoint.d
 
 # Create afterinit directory for children image scripts
 ONBUILD RUN mkdir docker-afterinit.d
+
+RUN mkdir ${APP_DIR}/ext_requirements
+COPY ext_setup/requirements.txt ${APP_DIR}/ext_requirements/
+RUN pip install -r ${APP_DIR}/ext_requirements/requirements.txt
+
+RUN apk add --no-cache mysql-client
+RUN apk add --no-cache mongodb-tools
+RUN apk add --no-cache openjdk11
+RUN apk add --no-cache zip
 
 EXPOSE 5000
 
