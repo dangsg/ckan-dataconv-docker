@@ -34,6 +34,7 @@ services:
       - CKAN_MAX_UPLOAD_SIZE_MB=${CKAN_MAX_UPLOAD_SIZE_MB}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
       - DS_RO_PASS=${DATASTORE_READONLY_PASSWORD}
+      - PYTHONUNBUFFERED=1
     volumes:
       - ckan_data:/srv/app/data
     links:
@@ -101,6 +102,8 @@ services:
       - MYSQL_ROOT_PASSWORD=Db12345678
       - MYSQL_USER=dangsg
       - MYSQL_PASSWORD=Db12345678
+    ports:
+      - "3306:3306"
     volumes:
       - mysql_data:/var/lib/mysql
     networks:
@@ -112,6 +115,8 @@ services:
     environment:
       - MONGO_INITDB_ROOT_USERNAME=dangsg
       - MONGO_INITDB_ROOT_PASSWORD=Db@12345678
+    ports:
+      - "27017:27017"
     volumes:
       - mongo_data:/data/db
     networks:

@@ -157,11 +157,15 @@ RUN pip install -e /srv/app/src/ckan && \
     pip install --no-index --find-links=/srv/app/ext_wheels ckanext-envvars && \
     # Create and update CKAN config
     # Set timezone
-    echo "UTC" >  /etc/timezone && \
+    echo "Asia/Ho_Chi_Minh" >  /etc/timezone && \
     # Generate CKAN config
     ckan generate config ${APP_DIR}/production.ini && \
     # Configure plugins
     ckan config-tool ${APP_DIR}/production.ini "ckan.plugins = ${CKAN__PLUGINS}" && \
+    # Set pakage creation settting
+    ckan config-tool ${APP_DIR}/production.ini "ckan.auth.create_unowned_dataset = true" && \
+    ckan config-tool ${APP_DIR}/production.ini "ckan.auth.create_dataset_if_not_in_organization = true" && \
+    ckan config-tool ${APP_DIR}/production.ini "ckan.auth.user_create_organizations = true" && \
     # Create the data directory
     mkdir ${DATA_DIR} && \
     # Webassets can't be loaded from env variables at runtime, it needs to be in the config so that it is created
